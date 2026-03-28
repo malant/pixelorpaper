@@ -7,6 +7,8 @@ import { CartProvider } from "@/context/cart-context";
 const heading = Syne({
   subsets: ["latin"],
   variable: "--font-heading",
+  preload: false,
+  display: "swap",
 });
 
 const body = IBM_Plex_Mono({
