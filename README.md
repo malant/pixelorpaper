@@ -39,6 +39,7 @@ copy .env.example .env.local
 
 ```env
 STRIPE_SECRET_KEY=sk_test_...
+STRIPE_LEGACY_UNFRAMED_SECRET_KEY=sk_test_... # optional: include old Unframed sessions
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_IMAGE_BASE_URL=https://pub-b000034b4d0a4300a99ec3ffdae75820.r2.dev
 R2_S3_ENDPOINT=https://d6ae1ac1deda0bb0d36408fb08a0fd19.r2.cloudflarestorage.com/base44-images
@@ -153,6 +154,12 @@ Catalog pages and product pages use preview files. Paid download links and print
 5. Export paid print orders as CSV from:
    - `/api/orders/prints/csv`
    - Optional date window: `/api/orders/prints/csv?days=30`
+
+Optional migration setting:
+
+- Set `STRIPE_LEGACY_UNFRAMED_SECRET_KEY` to include paid sessions from your old Unframed Stripe account in:
+  - `/api/orders/prints/csv`
+  - checkout success session lookup (`/checkout/success?session_id=...`)
 
 When `checkout.session.completed` is received and paid:
 

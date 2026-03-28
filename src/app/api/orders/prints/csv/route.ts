@@ -1,4 +1,4 @@
-import Stripe from "stripe";
+import { getStripeClientEntries } from "@/lib/stripe-sessions";
 
 export const runtime = "nodejs";
 
@@ -72,9 +72,12 @@ function toCsv(rows: CsvRow[]): string {
 }
 
 export async function GET(req: Request) {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) {
-    return new Response("Missing STRIPE_SECRET_KEY", { status: 500 });
+  const stripeClients = getStripeClientEntries();
+  if (stripeClients.length === 0) {
+    return new Response(
+      "Missing STRIPE_SECRET_KEY (and optional STRIPE_LEGACY_UNFRAMED_SECRET_KEY)",
+      { status: 500 },
+    );
   }
 
   const url = new URL(req.url);
@@ -82,62 +85,71 @@ export async function GET(req: Request) {
   const days = Number.isFinite(daysRaw) && daysRaw > 0 ? daysRaw : 30;
   const gteTimestamp = Math.floor(Date.now() / 1000) - days * 24 * 60 * 60;
 
-  const stripe = new Stripe(stripeKey);
-
-  const sessions = await stripe.checkout.sessions.list({
-    limit: 100,
-    created: { gte: gteTimestamp },
-  });
-
   const rows: CsvRow[] = [];
+  const processedSessionIds = new Set<string>();
 
-  for (const session of sessions.data) {
-    if (session.payment_status !== "paid") {
-      continue;
-    }
+  for (const { client } of stripeClients) {
+    const sessions = await client.checkout.sessions.list({
+      limit: 100,
+      created: { gte: gteTimestamp },
+    });
 
-    const detailedSession = await stripe.checkout.sessions.retrieve(
-      session.id,
-      {
-        expand: ["line_items.data.price.product"],
-      },
-    );
-
-    const lineItems = detailedSession.line_items?.data ?? [];
-    const address = detailedSession.customer_details?.address;
-
-    for (const line of lineItems) {
-      const product = line.price?.product;
-      if (!product || typeof product === "string") {
+    for (const session of sessions.data) {
+      if (session.payment_status !== "paid") {
         continue;
       }
 
-      if ("deleted" in product) {
+      if (processedSessionIds.has(session.id)) {
         continue;
       }
 
-      if (product.metadata.purchase_type !== "print") {
-        continue;
-      }
+      const detailedSession = await client.checkout.sessions.retrieve(
+        session.id,
+        {
+          expand: ["line_items.data.price.product"],
+        },
+      );
 
-      rows.push({
-        stripeSessionId: detailedSession.id,
-        paidAt: new Date((detailedSession.created ?? 0) * 1000).toISOString(),
-        customerName: detailedSession.customer_details?.name ?? "",
-        customerEmail: detailedSession.customer_details?.email ?? "",
-        shippingLine1: address?.line1 ?? "",
-        shippingLine2: address?.line2 ?? "",
-        shippingCity: address?.city ?? "",
-        shippingState: address?.state ?? "",
-        shippingPostalCode: address?.postal_code ?? "",
-        shippingCountry: address?.country ?? "",
-        productName: product.name,
-        quantity: line.quantity ?? 1,
-        printSizeKey: product.metadata.print_size_key ?? "",
-        sourceImageKey: product.metadata.download_key ?? "",
-      });
+      processedSessionIds.add(detailedSession.id);
+
+      const lineItems = detailedSession.line_items?.data ?? [];
+      const address = detailedSession.customer_details?.address;
+
+      for (const line of lineItems) {
+        const product = line.price?.product;
+        if (!product || typeof product === "string") {
+          continue;
+        }
+
+        if ("deleted" in product) {
+          continue;
+        }
+
+        if (product.metadata.purchase_type !== "print") {
+          continue;
+        }
+
+        rows.push({
+          stripeSessionId: detailedSession.id,
+          paidAt: new Date((detailedSession.created ?? 0) * 1000).toISOString(),
+          customerName: detailedSession.customer_details?.name ?? "",
+          customerEmail: detailedSession.customer_details?.email ?? "",
+          shippingLine1: address?.line1 ?? "",
+          shippingLine2: address?.line2 ?? "",
+          shippingCity: address?.city ?? "",
+          shippingState: address?.state ?? "",
+          shippingPostalCode: address?.postal_code ?? "",
+          shippingCountry: address?.country ?? "",
+          productName: product.name,
+          quantity: line.quantity ?? 1,
+          printSizeKey: product.metadata.print_size_key ?? "",
+          sourceImageKey: product.metadata.download_key ?? "",
+        });
+      }
     }
   }
+
+  rows.sort((a, b) => b.paidAt.localeCompare(a.paidAt));
 
   const csv = toCsv(rows);
   const filename = `digitalab-print-orders-${new Date().toISOString().slice(0, 10)}.csv`;

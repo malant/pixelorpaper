@@ -1,8 +1,8 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import Stripe from "stripe";
 import { createR2Client, resolveR2Config } from "@/lib/r2";
 import { SuccessContent } from "@/components/checkout-success-content";
+import { retrievePaidCheckoutSession } from "@/lib/stripe-sessions";
 
 type SuccessPageProps = {
   searchParams: Promise<{ session_id?: string }>;
@@ -20,21 +20,13 @@ type PrintItem = {
   printSizeKey: string;
 };
 
-async function getDownloadLinks(sessionId: string): Promise<DownloadLink[]> {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
+async function getDownloadLinks(
+  session: Awaited<ReturnType<typeof retrievePaidCheckoutSession>>,
+): Promise<DownloadLink[]> {
   const client = createR2Client();
   const r2 = resolveR2Config();
 
-  if (!stripeKey || !client || !r2) {
-    return [];
-  }
-
-  const stripe = new Stripe(stripeKey);
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ["line_items.data.price.product"],
-  });
-
-  if (session.payment_status !== "paid") {
+  if (!session || !client || !r2) {
     return [];
   }
 
@@ -86,18 +78,10 @@ async function getDownloadLinks(sessionId: string): Promise<DownloadLink[]> {
   return links;
 }
 
-async function getPrintItems(sessionId: string): Promise<PrintItem[]> {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) {
-    return [];
-  }
-
-  const stripe = new Stripe(stripeKey);
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ["line_items.data.price.product"],
-  });
-
-  if (session.payment_status !== "paid") {
+async function getPrintItems(
+  session: Awaited<ReturnType<typeof retrievePaidCheckoutSession>>,
+): Promise<PrintItem[]> {
+  if (!session) {
     return [];
   }
 
@@ -132,8 +116,11 @@ export default async function CheckoutSuccessPage({
   searchParams,
 }: SuccessPageProps) {
   const { session_id: sessionId } = await searchParams;
-  const downloads = sessionId ? await getDownloadLinks(sessionId) : [];
-  const printItems = sessionId ? await getPrintItems(sessionId) : [];
+  const session = sessionId
+    ? await retrievePaidCheckoutSession(sessionId)
+    : null;
+  const downloads = await getDownloadLinks(session);
+  const printItems = await getPrintItems(session);
 
   return (
     <SuccessContent
