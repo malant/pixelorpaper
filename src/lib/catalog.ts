@@ -1,8 +1,7 @@
 import "server-only";
 
-import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
-import { fallbackProducts } from "@/data/products";
-import { createR2Client, resolveR2Config } from "@/lib/r2";
+import { AwsClient } from "aws4fetch";
+import { resolveR2Config } from "@/lib/r2";
 import {
   productCategories,
   type Product,
@@ -139,30 +138,51 @@ function toProductFromKey(
 }
 
 async function listAllKeys(
-  client: S3Client,
+  endpoint: string,
   bucket: string,
+  accessKeyId: string,
+  secretAccessKey: string,
 ): Promise<string[]> {
+  const aws = new AwsClient({
+    accessKeyId,
+    secretAccessKey,
+    service: "s3",
+    region: "auto",
+  });
   const keys: string[] = [];
   let continuationToken: string | undefined;
 
   do {
-    const response = await client.send(
-      new ListObjectsV2Command({
-        Bucket: bucket,
-        ContinuationToken: continuationToken,
-        MaxKeys: 1000,
-      }),
-    );
+    const url = new URL(endpoint);
+    url.pathname = `/${bucket}`;
+    url.searchParams.set("list-type", "2");
+    url.searchParams.set("max-keys", "1000");
 
-    for (const item of response.Contents ?? []) {
-      if (item.Key) {
-        keys.push(item.Key);
-      }
+    if (continuationToken) {
+      url.searchParams.set("continuation-token", continuationToken);
     }
 
-    continuationToken = response.IsTruncated
-      ? response.NextContinuationToken
-      : undefined;
+    const response = await aws.fetch(url.toString(), { method: "GET" });
+    if (!response.ok) {
+      throw new Error(`R2 list request failed with ${response.status}`);
+    }
+
+    const xml = await response.text();
+    for (const match of xml.matchAll(/<Key>(.*?)<\/Key>/g)) {
+      const key = decodeURIComponent(match[1])
+        .replaceAll("&amp;", "&")
+        .replaceAll("&lt;", "<")
+        .replaceAll("&gt;", ">")
+        .replaceAll("&quot;", '"')
+        .replaceAll("&apos;", "'");
+      keys.push(key);
+    }
+
+    const tokenMatch = xml.match(
+      /<NextContinuationToken>(.*?)<\/NextContinuationToken>/,
+    );
+    const truncated = /<IsTruncated>true<\/IsTruncated>/.test(xml);
+    continuationToken = truncated ? tokenMatch?.[1] : undefined;
   } while (continuationToken);
 
   return keys;
@@ -176,7 +196,8 @@ export async function getCatalogProducts(): Promise<Product[]> {
   }
 
   const resolved = resolveR2Config();
-  const client = createR2Client();
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID?.trim();
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim();
   const previewPrefix = normalizePrefix(
     process.env.R2_PUBLIC_PREVIEW_PREFIX ?? "",
   );
@@ -188,17 +209,14 @@ export async function getCatalogProducts(): Promise<Product[]> {
     "[getCatalogProducts] R2 Config resolved:",
     resolved ? `✓ bucket=${resolved.bucket}` : "✗ null",
   );
-  console.log("[getCatalogProducts] R2 Client created:", client ? "✓" : "✗");
   console.log(
     "[getCatalogProducts] R2 Env vars:",
-    `ACCESS_KEY=${process.env.R2_ACCESS_KEY_ID ? "✓" : "✗"}, SECRET=${process.env.R2_SECRET_ACCESS_KEY ? "✓" : "✗"}, ENDPOINT=${process.env.R2_S3_ENDPOINT ? "✓" : "✗"}`,
+    `ACCESS_KEY=${accessKeyId ? "✓" : "✗"}, SECRET=${secretAccessKey ? "✓" : "✗"}, ENDPOINT=${resolved?.endpoint ? "✓" : "✗"}`,
   );
 
-  if (!resolved || !client) {
-    console.warn(
-      "[getCatalogProducts] Using fallback products (R2 unavailable)",
-    );
-    return fallbackProducts;
+  if (!resolved || !accessKeyId || !secretAccessKey) {
+    console.error("[getCatalogProducts] R2 is required but not configured");
+    return [];
   }
 
   try {
@@ -210,17 +228,21 @@ export async function getCatalogProducts(): Promise<Product[]> {
     let keys: string[];
     try {
       keys = await Promise.race([
-        listAllKeys(client, resolved.bucket),
+        listAllKeys(
+          resolved.endpoint,
+          resolved.bucket,
+          accessKeyId,
+          secretAccessKey,
+        ),
         timeoutPromise,
       ]);
     } catch (timeoutOrError: unknown) {
-      // R2 timing out or erroring - just use fallback
       const error = timeoutOrError as Error;
       console.warn(
         "[getCatalogProducts] R2 request failed:",
         error.message || String(error),
       );
-      return fallbackProducts;
+      return [];
     }
 
     const previewKeys = previewPrefix
@@ -255,8 +277,7 @@ export async function getCatalogProducts(): Promise<Product[]> {
       };
     });
 
-    const result =
-      uniqueProducts.length > 0 ? uniqueProducts : fallbackProducts;
+    const result = uniqueProducts;
 
     // Cache the result with TTL
     cachedProducts = result;
@@ -265,6 +286,6 @@ export async function getCatalogProducts(): Promise<Product[]> {
     return result;
   } catch (error) {
     console.error("Failed to load products from R2", error);
-    return fallbackProducts;
+    return [];
   }
 }
