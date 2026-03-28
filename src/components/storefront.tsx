@@ -141,12 +141,12 @@ export function Storefront({
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-orange-50/90">
       <div className="pointer-events-none absolute -top-28 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,167,122,0.42)_0%,rgba(255,167,122,0)_70%)]" />
 
       <PageHeader onCartClick={() => setIsCartOpen((value) => !value)} />
 
-      <section className="mx-auto mb-8 flex w-full max-w-6xl flex-wrap gap-3 px-6 pt-36 md:px-10">
+      <section className="mx-auto mb-8 flex w-full max-w-6xl flex-wrap gap-3 px-6 pt-24 md:px-10 md:pt-28">
         {categories.map((category) => (
           <button
             key={category}
@@ -205,17 +205,18 @@ export function Storefront({
         ))}
       </main>
 
-      <footer className="mt-14 border-t border-zinc-200/80 bg-orange-50/92 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-3 px-6 py-4 md:flex-row md:items-center md:px-10">
-          <Image
-            src="/images/unframed-logo-editorial.svg"
-            alt="UNFRAMED editorial logo"
-            width={720}
-            height={200}
-            className="h-auto w-full max-w-64 md:max-w-80"
-          />
+      <footer className="mt-14 border-t border-orange-300/85 bg-orange-200/92 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-2 px-6 py-2 md:flex-row md:items-center md:px-10">
+          <div className="relative h-10 w-52 overflow-hidden rounded-md md:h-12 md:w-64">
+            <Image
+              src="/images/pixelorpaperLogo.png"
+              alt="Pixel or Paper logo"
+              fill
+              className="object-cover object-center"
+            />
+          </div>
           <p className="text-xs uppercase tracking-[0.14em] text-zinc-700">
-            Copyright {currentYear} UNFRAMED. All rights reserved.
+            Copyright {currentYear}. All rights reserved.
           </p>
         </div>
       </footer>
