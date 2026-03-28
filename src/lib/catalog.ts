@@ -198,6 +198,51 @@ async function listAllKeys(
   return keys;
 }
 
+async function listAllKeysWithTimeoutAndRetry(
+  endpoint: string,
+  bucket: string,
+  accessKeyId: string,
+  secretAccessKey: string,
+): Promise<string[]> {
+  const timeoutMs = Number.parseInt(
+    process.env.R2_LIST_TIMEOUT_MS ?? "15000",
+    10,
+  );
+  const effectiveTimeoutMs =
+    Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 15000;
+
+  const fetchWithTimeout = async (): Promise<string[]> => {
+    const timeoutPromise: Promise<never> = new Promise((_, reject) =>
+      setTimeout(
+        () =>
+          reject(new Error(`R2 request timeout after ${effectiveTimeoutMs}ms`)),
+        effectiveTimeoutMs,
+      ),
+    );
+
+    return Promise.race([
+      listAllKeys(endpoint, bucket, accessKeyId, secretAccessKey),
+      timeoutPromise,
+    ]);
+  };
+
+  try {
+    return await fetchWithTimeout();
+  } catch (firstError: unknown) {
+    const firstMessage =
+      firstError instanceof Error ? firstError.message : String(firstError);
+    console.warn(
+      "[getCatalogProducts] First R2 list attempt failed:",
+      firstMessage,
+    );
+
+    // One retry for cold starts/transient network jitter on edge runtime.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    return fetchWithTimeout();
+  }
+}
+
 export async function getCatalogProducts(): Promise<Product[]> {
   // Return cached products if available
   const cached = getCachedProducts();
@@ -230,22 +275,14 @@ export async function getCatalogProducts(): Promise<Product[]> {
   }
 
   try {
-    // Add timeout to prevent hanging on unresponsive R2 (critical for dev/production)
-    const timeoutPromise: Promise<never> = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("R2 request timeout after 3s")), 3000),
-    );
-
     let keys: string[];
     try {
-      keys = await Promise.race([
-        listAllKeys(
-          resolved.endpoint,
-          resolved.bucket,
-          accessKeyId,
-          secretAccessKey,
-        ),
-        timeoutPromise,
-      ]);
+      keys = await listAllKeysWithTimeoutAndRetry(
+        resolved.endpoint,
+        resolved.bucket,
+        accessKeyId,
+        secretAccessKey,
+      );
     } catch (timeoutOrError: unknown) {
       const error = timeoutOrError as Error;
       console.warn(
