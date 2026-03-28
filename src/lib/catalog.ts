@@ -2,6 +2,7 @@ import "server-only";
 
 import { AwsClient } from "aws4fetch";
 import { resolveR2Config } from "@/lib/r2";
+import { getServerEnv } from "@/lib/server-env";
 import {
   productCategories,
   type Product,
@@ -205,7 +206,7 @@ async function listAllKeysWithTimeoutAndRetry(
   secretAccessKey: string,
 ): Promise<string[]> {
   const timeoutMs = Number.parseInt(
-    process.env.R2_LIST_TIMEOUT_MS ?? "15000",
+    getServerEnv("R2_LIST_TIMEOUT_MS") ?? "15000",
     10,
   );
   const effectiveTimeoutMs =
@@ -251,13 +252,13 @@ export async function getCatalogProducts(): Promise<Product[]> {
   }
 
   const resolved = resolveR2Config();
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID?.trim();
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim();
+  const accessKeyId = getServerEnv("R2_ACCESS_KEY_ID");
+  const secretAccessKey = getServerEnv("R2_SECRET_ACCESS_KEY");
   const previewPrefix = normalizePrefix(
-    process.env.R2_PUBLIC_PREVIEW_PREFIX ?? "",
+    getServerEnv("R2_PUBLIC_PREVIEW_PREFIX") ?? "",
   );
   const originalPrefix = normalizePrefix(
-    process.env.R2_PRIVATE_ORIGINAL_PREFIX ?? "",
+    getServerEnv("R2_PRIVATE_ORIGINAL_PREFIX") ?? "",
   );
 
   console.log(
