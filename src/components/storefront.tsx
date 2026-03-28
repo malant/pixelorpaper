@@ -164,6 +164,22 @@ export function Storefront({
       </section>
 
       <main className="mx-auto grid w-full max-w-6xl gap-6 px-6 md:grid-cols-2 md:px-10 lg:grid-cols-3">
+        {visibleProducts.length === 0 ? (
+          <section className="col-span-full rounded-3xl border border-orange-300 bg-white/90 p-8 shadow-sm">
+            <h2 className="mb-3 text-2xl font-bold text-zinc-900">
+              Catalog unavailable
+            </h2>
+            <p className="mb-2 text-sm text-zinc-700">
+              No products were returned from Cloudflare R2, so the gallery is
+              empty.
+            </p>
+            <p className="text-sm text-zinc-700">
+              Confirm your Cloudflare Pages environment variables include
+              R2_S3_ENDPOINT or R2_ACCOUNT_ID, plus R2_ACCESS_KEY_ID,
+              R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.
+            </p>
+          </section>
+        ) : null}
         {visibleProducts.map((product, index) => (
           <article
             key={product.id}

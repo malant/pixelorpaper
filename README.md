@@ -75,7 +75,7 @@ npm run dev
 
 ## Notes
 
-- Product images are local SVG placeholders in `public/images`. Replace with your real artwork assets.
+- Product catalog is remote-only from Cloudflare R2.
 - Checkout requires a valid Stripe test or live key.
 
 ## Cloudflare R2 Setup
@@ -110,7 +110,7 @@ If `R2_S3_ENDPOINT` (or `R2_ACCOUNT_ID`), `R2_ACCESS_KEY_ID`, and `R2_SECRET_ACC
 - Folder names are mapped to categories: Landscapes, Cityscapes, Buildings, Nature, Misc.
 - Product titles are generated from file names.
 - Default price, artist, and print size come from the env values above.
-- If credentials are missing or listing fails, the app falls back to the local sample products.
+- If credentials are missing or listing fails, the catalog is intentionally empty and the storefront shows a configuration message.
 
 ### Public Previews + Private Originals
 
