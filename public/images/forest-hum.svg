@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Forest Hum abstract placeholder">
+  <rect width="1200" height="800" fill="#14532d" />
+  <rect x="90" y="0" width="50" height="800" fill="#052e16" opacity="0.55" />
+  <rect x="240" y="0" width="45" height="800" fill="#064e3b" opacity="0.55" />
+  <rect x="410" y="0" width="40" height="800" fill="#022c22" opacity="0.6" />
+  <rect x="620" y="0" width="48" height="800" fill="#065f46" opacity="0.55" />
+  <rect x="820" y="0" width="44" height="800" fill="#052e16" opacity="0.6" />
+  <rect x="1020" y="0" width="38" height="800" fill="#064e3b" opacity="0.6" />
+  <circle cx="220" cy="160" r="140" fill="#bbf7d0" opacity="0.22" />
+</svg>

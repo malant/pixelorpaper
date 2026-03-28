@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="City Veil abstract placeholder">
+  <rect width="1200" height="800" fill="#111827" />
+  <rect x="140" y="120" width="180" height="520" fill="#374151" />
+  <rect x="370" y="180" width="200" height="470" fill="#4b5563" />
+  <rect x="620" y="80" width="180" height="590" fill="#1f2937" />
+  <rect x="850" y="220" width="170" height="420" fill="#6b7280" />
+  <path d="M0 500 C300 620 700 420 1200 560" stroke="#fde68a" stroke-width="30" opacity="0.35" />
+</svg>

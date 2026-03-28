@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Drift Memory abstract placeholder">
+  <rect width="1200" height="800" fill="#d6d3d1" />
+  <path d="M0 280 C210 180 420 380 640 290 C830 220 1020 360 1200 260" stroke="#57534e" stroke-width="26" fill="none" />
+  <path d="M0 430 C230 320 470 530 680 430 C850 350 1030 510 1200 430" stroke="#78716c" stroke-width="20" fill="none" />
+  <path d="M0 590 C210 500 430 690 670 590 C860 510 1030 640 1200 580" stroke="#a8a29e" stroke-width="18" fill="none" />
+</svg>

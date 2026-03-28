@@ -1,0 +1,17 @@
+<svg width="720" height="170" viewBox="0 0 720 170" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="logoBTitle logoBDesc">
+  <title id="logoBTitle">UNFRAMED Minimal Logo</title>
+  <desc id="logoBDesc">Minimal monochrome logo with angular frame symbol and bold wordmark.</desc>
+
+  <g transform="translate(28 24)" fill="#111111">
+    <path d="M0 0H98V16H16V98H0V0Z"/>
+    <path d="M98 122H0V106H82V24H98V122Z"/>
+    <path d="M24 84L44 62L58 74L78 50V84H24Z"/>
+  </g>
+
+  <g fill="#111111" font-family="Syne, Arial, sans-serif">
+    <text x="170" y="92" font-size="74" font-weight="700" letter-spacing="5">UNFRAMED</text>
+  </g>
+  <g fill="#111111" font-family="'IBM Plex Mono', 'Courier New', monospace">
+    <text x="172" y="130" font-size="20" letter-spacing="8">COLLECT PHOTOGRAPHY</text>
+  </g>
+</svg>
