@@ -7,7 +7,8 @@ import {
   type PurchaseVariant,
 } from "@/lib/purchase";
 
-export const runtime = "edge";
+// Use default (nodejs) runtime for R2 catalog fetching
+// export const runtime = "edge"; // REMOVED - needs full Node.js for S3/R2 XML parsing
 
 type Payload = {
   items?: Array<{

@@ -4,7 +4,8 @@ import { createR2Client, resolveR2Config } from "@/lib/r2";
 import { SuccessContent } from "@/components/checkout-success-content";
 import { retrievePaidCheckoutSession } from "@/lib/stripe-sessions";
 
-export const runtime = "edge";
+// Use default (nodejs) runtime for R2 and S3 operations
+// export const runtime = "edge"; // REMOVED - R2 client needs full Node.js for XML parsing
 
 type SuccessPageProps = {
   searchParams: Promise<{ session_id?: string }>;

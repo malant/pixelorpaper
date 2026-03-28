@@ -184,12 +184,45 @@ export async function getCatalogProducts(): Promise<Product[]> {
     process.env.R2_PRIVATE_ORIGINAL_PREFIX ?? "",
   );
 
+  console.log(
+    "[getCatalogProducts] R2 Config resolved:",
+    resolved ? `✓ bucket=${resolved.bucket}` : "✗ null",
+  );
+  console.log("[getCatalogProducts] R2 Client created:", client ? "✓" : "✗");
+  console.log(
+    "[getCatalogProducts] R2 Env vars:",
+    `ACCESS_KEY=${process.env.R2_ACCESS_KEY_ID ? "✓" : "✗"}, SECRET=${process.env.R2_SECRET_ACCESS_KEY ? "✓" : "✗"}, ENDPOINT=${process.env.R2_S3_ENDPOINT ? "✓" : "✗"}`,
+  );
+
   if (!resolved || !client) {
+    console.warn(
+      "[getCatalogProducts] Using fallback products (R2 unavailable)",
+    );
     return fallbackProducts;
   }
 
   try {
-    const keys = await listAllKeys(client, resolved.bucket);
+    // Add timeout to prevent hanging on unresponsive R2 (critical for dev/production)
+    const timeoutPromise: Promise<never> = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("R2 request timeout after 3s")), 3000),
+    );
+
+    let keys: string[];
+    try {
+      keys = await Promise.race([
+        listAllKeys(client, resolved.bucket),
+        timeoutPromise,
+      ]);
+    } catch (timeoutOrError: unknown) {
+      // R2 timing out or erroring - just use fallback
+      const error = timeoutOrError as Error;
+      console.warn(
+        "[getCatalogProducts] R2 request failed:",
+        error.message || String(error),
+      );
+      return fallbackProducts;
+    }
+
     const previewKeys = previewPrefix
       ? keys.filter((key) => key.startsWith(previewPrefix))
       : keys;

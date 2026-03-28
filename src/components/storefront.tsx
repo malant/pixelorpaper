@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { formatPrice } from "@/lib/format";
-import { resolveProductImage } from "@/lib/images";
 import { getProductAltText } from "@/lib/seo";
 import { PageHeader } from "@/components/page-header";
+import { ProductImage } from "@/components/product-image";
 import type { Product } from "@/types/product";
 
 const categories = [
@@ -178,12 +178,11 @@ export function Storefront({
                 className="relative mb-4 aspect-5/4 overflow-hidden rounded-2xl bg-zinc-100"
                 data-secure-image
               >
-                <Image
-                  src={resolveProductImage(product.image)}
+                <ProductImage
+                  src={product.image}
                   alt={getProductAltText(product)}
-                  fill
                   priority={index === 0}
-                  className="pointer-events-none select-none object-cover transition duration-500 group-hover:scale-105"
+                  className="transition duration-500 group-hover:scale-105"
                 />
               </div>
             </Link>

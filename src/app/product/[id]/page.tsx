@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductPurchasePanel } from "@/components/product-purchase-panel";
 import { ProductPageLayout } from "@/components/product-page-layout";
+import { ProductImage } from "@/components/product-image";
 import { getCatalogProducts } from "@/lib/catalog";
 import { resolveProductImage } from "@/lib/images";
 import { getProductAltText } from "@/lib/seo";
 
-export const runtime = "edge";
+// Use default (nodejs) runtime for R2 catalog fetching
+// export const runtime = "edge"; // REMOVED - needs full Node.js for S3/R2 XML parsing
 
 export const revalidate = 3600;
 
@@ -124,11 +125,10 @@ export default async function ProductPage({
             className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100"
             data-secure-image
           >
-            <Image
-              src={resolveProductImage(product.image)}
+            <ProductImage
+              src={product.image}
               alt={getProductAltText(product)}
-              fill
-              className="pointer-events-none select-none object-cover"
+              className="transition duration-500"
             />
           </div>
           <div>

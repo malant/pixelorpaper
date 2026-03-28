@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { getCatalogProducts } from "@/lib/catalog";
 import { Storefront } from "@/components/storefront";
 
-export const runtime = "edge";
+// Use default (nodejs) runtime for R2 catalog fetching
+// export const runtime = "edge"; // REMOVED - needs full Node.js for S3/R2 XML parsing
 
 export const revalidate = 3600;
 
