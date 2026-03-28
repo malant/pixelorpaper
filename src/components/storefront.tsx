@@ -42,17 +42,60 @@ export function Storefront({
   const [activeCategory, setActiveCategory] = useState<Category>(
     toCategory(initialCategory),
   );
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>(products);
+  const [isRecoveringCatalog, setIsRecoveringCatalog] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const { cart, itemCount, subtotalCents, removeFromCart, clearCart } =
     useCart();
 
   const visibleProducts = useMemo(() => {
     if (activeCategory === "All") {
-      return products;
+      return catalogProducts;
     }
 
-    return products.filter((product) => product.category === activeCategory);
-  }, [activeCategory, products]);
+    return catalogProducts.filter(
+      (product) => product.category === activeCategory,
+    );
+  }, [activeCategory, catalogProducts]);
+
+  useEffect(() => {
+    setCatalogProducts(products);
+  }, [products]);
+
+  useEffect(() => {
+    if (catalogProducts.length > 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const recoverCatalog = async () => {
+      setIsRecoveringCatalog(true);
+      try {
+        const response = await fetch("/api/catalog", { cache: "no-store" });
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as { products?: Product[] };
+        if (!cancelled && Array.isArray(payload.products)) {
+          setCatalogProducts(payload.products);
+        }
+      } catch {
+        // Keep existing empty state message if runtime recovery fails.
+      } finally {
+        if (!cancelled) {
+          setIsRecoveringCatalog(false);
+        }
+      }
+    };
+
+    void recoverCatalog();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [catalogProducts.length]);
 
   useEffect(() => {
     if (!isCartOpen) {
@@ -178,6 +221,11 @@ export function Storefront({
               R2_S3_ENDPOINT or R2_ACCOUNT_ID, plus R2_ACCESS_KEY_ID,
               R2_SECRET_ACCESS_KEY, and R2_BUCKET_NAME.
             </p>
+            {isRecoveringCatalog ? (
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                Retrying from edge runtime...
+              </p>
+            ) : null}
           </section>
         ) : null}
         {visibleProducts.map((product, index) => (

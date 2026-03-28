@@ -4,7 +4,7 @@ import { Storefront } from "@/components/storefront";
 
 // Note: R2 catalog loading is optional; will use fallback if unavailable
 export const runtime = "edge";
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Fine Art Photography Prints",
