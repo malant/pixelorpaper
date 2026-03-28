@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
-const imageBaseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL;
+const FALLBACK_IMAGE_BASE_URL =
+  "https://pub-b000034b4d0a4300a99ec3ffdae75820.r2.dev";
+const imageBaseUrl =
+  process.env.NEXT_PUBLIC_IMAGE_BASE_URL || FALLBACK_IMAGE_BASE_URL;
 
 const remotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [];
 

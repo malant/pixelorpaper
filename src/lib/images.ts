@@ -1,5 +1,8 @@
 export function resolveProductImage(imagePath: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL?.trim();
+  const fallbackBaseUrl = "https://pub-b000034b4d0a4300a99ec3ffdae75820.r2.dev";
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_IMAGE_BASE_URL || fallbackBaseUrl
+  ).trim();
 
   if (!baseUrl) {
     return imagePath;
