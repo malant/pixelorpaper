@@ -38,17 +38,33 @@ export function createR2Client(): S3Client | null {
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
   const resolved = resolveR2Config();
 
+  // Skip R2 entirely on edge runtime (DOMParser not available for XML parsing)
+  // Cloudflare edge exposes crypto, so we can detect it this way
+  if (
+    typeof globalThis.crypto !== "undefined" &&
+    typeof Uint8Array !== "undefined"
+  ) {
+    // Likely edge runtime - DOMParser won't be available
+    return null;
+  }
+
   if (!resolved || !accessKeyId || !secretAccessKey) {
     return null;
   }
 
-  return new S3Client({
-    region: "auto",
-    endpoint: resolved.endpoint,
-    forcePathStyle: true,
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
-    },
-  });
+  try {
+    return new S3Client({
+      region: "auto",
+      endpoint: resolved.endpoint,
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    });
+  } catch (error) {
+    // If S3Client construction fails (DOMParser error or other), return null
+    console.warn("[createR2Client] S3Client construction failed:", error);
+    return null;
+  }
 }

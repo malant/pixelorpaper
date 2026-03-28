@@ -8,9 +8,8 @@ import { getCatalogProducts } from "@/lib/catalog";
 import { resolveProductImage } from "@/lib/images";
 import { getProductAltText } from "@/lib/seo";
 
-// Use default (nodejs) runtime for R2 catalog fetching
-// export const runtime = "edge"; // REMOVED - needs full Node.js for S3/R2 XML parsing
-
+// Note: R2 catalog loading is optional; will use fallback if unavailable
+export const runtime = "edge";
 export const revalidate = 3600;
 
 export async function generateMetadata({
