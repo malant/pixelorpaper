@@ -162,12 +162,20 @@ async function listAllKeys(
       url.searchParams.set("continuation-token", continuationToken);
     }
 
+    console.log("[listAllKeys] Request URL:", url.toString().substring(0, 150));
     const response = await aws.fetch(url.toString(), { method: "GET" });
+    console.log("[listAllKeys] Response status:", response.status);
     if (!response.ok) {
       throw new Error(`R2 list request failed with ${response.status}`);
     }
 
     const xml = await response.text();
+    console.log(
+      "[listAllKeys] XML length:",
+      xml.length,
+      "bytes, first 300 chars:",
+      xml.substring(0, 300),
+    );
     for (const match of xml.matchAll(/<Key>(.*?)<\/Key>/g)) {
       const key = decodeURIComponent(match[1])
         .replaceAll("&amp;", "&")
@@ -177,6 +185,7 @@ async function listAllKeys(
         .replaceAll("&apos;", "'");
       keys.push(key);
     }
+    console.log("[listAllKeys] Keys found in this batch:", keys.length);
 
     const tokenMatch = xml.match(
       /<NextContinuationToken>(.*?)<\/NextContinuationToken>/,
@@ -185,6 +194,7 @@ async function listAllKeys(
     continuationToken = truncated ? tokenMatch?.[1] : undefined;
   } while (continuationToken);
 
+  console.log("[listAllKeys] Total keys retrieved:", keys.length);
   return keys;
 }
 
@@ -248,6 +258,10 @@ export async function getCatalogProducts(): Promise<Product[]> {
     const previewKeys = previewPrefix
       ? keys.filter((key) => key.startsWith(previewPrefix))
       : keys;
+    console.log(
+      "[getCatalogProducts] Preview keys after prefix filter:",
+      previewPrefix ? `${previewKeys.length} of ${keys.length}` : "all",
+    );
     const products = previewKeys
       .map((key) => toProductFromKey(key, previewPrefix, originalPrefix))
       .filter((product): product is Product => Boolean(product))
@@ -261,6 +275,10 @@ export async function getCatalogProducts(): Promise<Product[]> {
 
         return a.title.localeCompare(b.title);
       });
+    console.log(
+      "[getCatalogProducts] Products created after filtering:",
+      products.length,
+    );
 
     const seenIds = new Map<string, number>();
     const uniqueProducts = products.map((product) => {
