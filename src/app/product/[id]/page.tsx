@@ -8,6 +8,8 @@ import { getCatalogProducts } from "@/lib/catalog";
 import { resolveProductImage } from "@/lib/images";
 import { getProductAltText } from "@/lib/seo";
 
+export const runtime = "edge";
+
 export const revalidate = 3600;
 
 export async function generateMetadata({

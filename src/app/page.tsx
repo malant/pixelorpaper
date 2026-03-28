@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getCatalogProducts } from "@/lib/catalog";
 import { Storefront } from "@/components/storefront";
 
+export const runtime = "edge";
+
 export const revalidate = 3600;
 
 export const metadata: Metadata = {

@@ -7,6 +7,8 @@ import {
   type PurchaseVariant,
 } from "@/lib/purchase";
 
+export const runtime = "edge";
+
 type Payload = {
   items?: Array<{
     productId: string;

@@ -4,6 +4,8 @@ import { createR2Client, resolveR2Config } from "@/lib/r2";
 import { SuccessContent } from "@/components/checkout-success-content";
 import { retrievePaidCheckoutSession } from "@/lib/stripe-sessions";
 
+export const runtime = "edge";
+
 type SuccessPageProps = {
   searchParams: Promise<{ session_id?: string }>;
 };
