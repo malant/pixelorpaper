@@ -228,44 +228,53 @@ export function Storefront({
             ) : null}
           </section>
         ) : null}
-        {visibleProducts.map((product, index) => (
-          <article
-            key={product.id}
-            id={`gallery-item-${product.id}`}
-            className="group rounded-3xl border border-zinc-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-lg"
-          >
-            <Link
-              href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
-              className="block"
+        {visibleProducts.map((product, index) => {
+          const showArtist =
+            product.artist.trim().toUpperCase() !== "UNFRAMED ARCHIVE";
+
+          return (
+            <article
+              key={product.id}
+              id={`gallery-item-${product.id}`}
+              className="group rounded-3xl border border-zinc-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
-              <div
-                className="relative mb-4 aspect-5/4 overflow-hidden rounded-2xl bg-zinc-100"
-                data-secure-image
+              <Link
+                href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
+                className="block"
               >
-                <ProductImage
-                  src={product.image}
-                  alt={getProductAltText(product)}
-                  priority={index === 0}
-                  className="transition duration-500 group-hover:scale-105"
-                />
-              </div>
-            </Link>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-900/70">
-              {product.artist}
-            </p>
-            <h2 className="mb-2 text-2xl font-bold text-zinc-900">
-              {product.title}
-            </h2>
-            <p className="mb-2 text-sm text-zinc-600">{product.size}</p>
-            <p className="mb-4 text-sm text-zinc-600">{product.description}</p>
-            <Link
-              href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
-              className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-orange-50 transition hover:bg-zinc-700"
-            >
-              View details and order
-            </Link>
-          </article>
-        ))}
+                <div
+                  className="relative mb-4 aspect-5/4 overflow-hidden rounded-2xl bg-zinc-100"
+                  data-secure-image
+                >
+                  <ProductImage
+                    src={product.image}
+                    alt={getProductAltText(product)}
+                    priority={index === 0}
+                    className="transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+              </Link>
+              {showArtist ? (
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-900/70">
+                  {product.artist}
+                </p>
+              ) : null}
+              <h2 className="mb-2 text-2xl font-bold text-zinc-900">
+                {product.title}
+              </h2>
+              <p className="mb-2 text-sm text-zinc-600">{product.size}</p>
+              <p className="mb-4 text-sm text-zinc-600">
+                {product.description}
+              </p>
+              <Link
+                href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
+                className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-orange-50 transition hover:bg-zinc-700"
+              >
+                View details and order
+              </Link>
+            </article>
+          );
+        })}
       </main>
 
       <footer className="mt-14 border-t border-orange-300/85 bg-orange-200/92 backdrop-blur-md">

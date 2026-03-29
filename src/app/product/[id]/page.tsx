@@ -133,6 +133,7 @@ export default async function ProductPage({
   };
 
   const jsonLd = [productJsonLd, breadcrumbJsonLd];
+  const showArtist = product.artist.trim().toUpperCase() !== "UNFRAMED ARCHIVE";
 
   return (
     <ProductPageLayout>
@@ -163,9 +164,11 @@ export default async function ProductPage({
             />
           </div>
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-orange-900/70">
-              {product.artist}
-            </p>
+            {showArtist ? (
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-orange-900/70">
+                {product.artist}
+              </p>
+            ) : null}
             <h1 className="mb-2 text-4xl font-bold text-zinc-900">
               {product.title}
             </h1>
