@@ -3,6 +3,8 @@ import { Syne, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ImageSecurityWrapper } from "@/components/image-security-wrapper";
 import { CartProvider } from "@/context/cart-context";
+import { GoogleAnalytics } from "@/components/analytics";
+import { WebVitalsReporter } from "@/components/web-vitals";
 
 const heading = Syne({
   subsets: ["latin"],
@@ -80,11 +82,23 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || "";
+  const imageBaseUrl =
+    process.env.NEXT_PUBLIC_IMAGE_BASE_URL ||
+    "https://pub-b000034b4d0a4300a99ec3ffdae75820.r2.dev";
+
   return (
     <html lang="en">
+      <head>
+        {/* Preconnect to image CDN for faster loading */}
+        <link rel="preconnect" href={imageBaseUrl} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={imageBaseUrl} />
+      </head>
       <body className={`${heading.variable} ${body.variable}`}>
         <CartProvider>
           <ImageSecurityWrapper>{children}</ImageSecurityWrapper>
+          <GoogleAnalytics gaId={gaId} />
+          <WebVitalsReporter />
         </CartProvider>
       </body>
     </html>

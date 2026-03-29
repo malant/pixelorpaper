@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCart } from "@/context/cart-context";
+import { trackAddToCart } from "./analytics";
 import {
   getDownloadPriceCents,
   printSizes,
@@ -16,6 +17,18 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
   );
   const { addPrintToCart, addDownloadToCart } = useCart();
   const downloadPriceCents = getDownloadPriceCents();
+
+  const handleAddDownload = () => {
+    addDownloadToCart(product);
+    trackAddToCart(product.id, product.title, downloadPriceCents);
+  };
+
+  const handleAddPrint = () => {
+    const selectedSize = printSizes.find((s) => s.key === selectedPrintSize);
+    const priceCents = selectedSize?.priceCents ?? product.priceCents;
+    addPrintToCart(product, selectedPrintSize);
+    trackAddToCart(product.id, product.title, priceCents);
+  };
 
   return (
     <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
@@ -51,14 +64,14 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
       <div className="grid gap-2 sm:grid-cols-2">
         <button
           type="button"
-          onClick={() => addDownloadToCart(product)}
+          onClick={handleAddDownload}
           className="rounded-full border border-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-900 hover:text-orange-50"
         >
           Add download
         </button>
         <button
           type="button"
-          onClick={() => addPrintToCart(product, selectedPrintSize)}
+          onClick={handleAddPrint}
           className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-orange-50 transition hover:bg-zinc-700"
         >
           Add print

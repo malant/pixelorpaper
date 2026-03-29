@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ProductPurchasePanel } from "@/components/product-purchase-panel";
 import { ProductPageLayout } from "@/components/product-page-layout";
 import { ProductImage } from "@/components/product-image";
+import { ProductViewTracker } from "@/components/product-view-tracker";
 import { getCatalogProducts } from "@/lib/catalog";
 import { resolveProductImage } from "@/lib/images";
 import { getProductAltText } from "@/lib/seo";
@@ -85,7 +86,7 @@ export default async function ProductPage({
   const backHref = returnTo
     ? `/?category=${encodeURIComponent(category ?? "All")}#gallery-item-${encodeURIComponent(returnTo)}`
     : `/?category=${encodeURIComponent(category ?? "All")}`;
-  const jsonLd = {
+  const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
@@ -106,13 +107,44 @@ export default async function ProductPage({
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.category,
+        item: `${siteUrl}/?category=${encodeURIComponent(product.category)}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.title,
+        item: `${siteUrl}/product/${product.id}`,
+      },
+    ],
+  };
+
+  const jsonLd = [productJsonLd, breadcrumbJsonLd];
+
   return (
     <ProductPageLayout>
       <main className="mx-auto w-full max-w-5xl px-6 md:px-10">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <ProductViewTracker product={product} />
+        {jsonLd.map((schema, idx) => (
+          <script
+            key={idx}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
         <Link
           href={backHref}
           className="mb-8 inline-block text-sm font-semibold text-zinc-700"

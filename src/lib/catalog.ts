@@ -27,6 +27,12 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 let cachedProducts: Product[] | null = null;
 let cacheExpireTime = 0;
 
+function debugLog(message: string, ...args: unknown[]): void {
+  if (process.env.NODE_ENV === "development") {
+    console.log(message, ...args);
+  }
+}
+
 function getCachedProducts(): Product[] | null {
   if (cachedProducts && Date.now() < cacheExpireTime) {
     return cachedProducts;
@@ -163,15 +169,15 @@ async function listAllKeys(
       url.searchParams.set("continuation-token", continuationToken);
     }
 
-    console.log("[listAllKeys] Request URL:", url.toString().substring(0, 150));
+    debugLog("[listAllKeys] Request URL:", url.toString().substring(0, 150));
     const response = await aws.fetch(url.toString(), { method: "GET" });
-    console.log("[listAllKeys] Response status:", response.status);
+    debugLog("[listAllKeys] Response status:", response.status);
     if (!response.ok) {
       throw new Error(`R2 list request failed with ${response.status}`);
     }
 
     const xml = await response.text();
-    console.log(
+    debugLog(
       "[listAllKeys] XML length:",
       xml.length,
       "bytes, first 300 chars:",
@@ -186,7 +192,7 @@ async function listAllKeys(
         .replaceAll("&apos;", "'");
       keys.push(key);
     }
-    console.log("[listAllKeys] Keys found in this batch:", keys.length);
+    debugLog("[listAllKeys] Keys found in this batch:", keys.length);
 
     const tokenMatch = xml.match(
       /<NextContinuationToken>(.*?)<\/NextContinuationToken>/,
@@ -195,7 +201,7 @@ async function listAllKeys(
     continuationToken = truncated ? tokenMatch?.[1] : undefined;
   } while (continuationToken);
 
-  console.log("[listAllKeys] Total keys retrieved:", keys.length);
+  debugLog("[listAllKeys] Total keys retrieved:", keys.length);
   return keys;
 }
 
@@ -261,11 +267,11 @@ export async function getCatalogProducts(): Promise<Product[]> {
     getServerEnv("R2_PRIVATE_ORIGINAL_PREFIX") ?? "",
   );
 
-  console.log(
+  debugLog(
     "[getCatalogProducts] R2 Config resolved:",
     resolved ? `✓ bucket=${resolved.bucket}` : "✗ null",
   );
-  console.log(
+  debugLog(
     "[getCatalogProducts] R2 Env vars:",
     `ACCESS_KEY=${accessKeyId ? "✓" : "✗"}, SECRET=${secretAccessKey ? "✓" : "✗"}, ENDPOINT=${resolved?.endpoint ? "✓" : "✗"}`,
   );
@@ -286,7 +292,7 @@ export async function getCatalogProducts(): Promise<Product[]> {
       );
     } catch (timeoutOrError: unknown) {
       const error = timeoutOrError as Error;
-      console.warn(
+      debugLog(
         "[getCatalogProducts] R2 request failed:",
         error.message || String(error),
       );
@@ -296,7 +302,7 @@ export async function getCatalogProducts(): Promise<Product[]> {
     const previewKeys = previewPrefix
       ? keys.filter((key) => key.startsWith(previewPrefix))
       : keys;
-    console.log(
+    debugLog(
       "[getCatalogProducts] Preview keys after prefix filter:",
       previewPrefix ? `${previewKeys.length} of ${keys.length}` : "all",
     );
@@ -313,7 +319,7 @@ export async function getCatalogProducts(): Promise<Product[]> {
 
         return a.title.localeCompare(b.title);
       });
-    console.log(
+    debugLog(
       "[getCatalogProducts] Products created after filtering:",
       products.length,
     );

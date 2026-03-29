@@ -24,7 +24,7 @@ export default async function HomePage({
   const products = await getCatalogProducts();
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const jsonLd = {
+  const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "UNFRAMED",
@@ -36,12 +36,32 @@ export default async function HomePage({
     },
   };
 
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "UNFRAMED",
+    url: siteUrl,
+    logo: `${siteUrl}/images/unframed-logo-editorial.svg`,
+    description:
+      "Fine art photography prints and curated imagery for collectors.",
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "Customer Support",
+      url: siteUrl,
+    },
+  };
+
+  const jsonLdScripts = [websiteJsonLd, organizationJsonLd];
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {jsonLdScripts.map((schema, idx) => (
+        <script
+          key={idx}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
       <Storefront products={products} initialCategory={category} />
     </>
   );
