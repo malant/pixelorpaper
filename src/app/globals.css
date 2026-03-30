@@ -93,3 +93,10 @@ textarea {
   -webkit-user-select: text;
   user-select: text;
 }
+
+/* Expanded header with background image */
+.header-expanded {
+  background-image: var(--header-bg);
+  background-position: center;
+  background-size: cover;
+}

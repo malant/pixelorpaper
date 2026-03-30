@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { formatPrice } from "@/lib/format";
 import { getProductAltText } from "@/lib/seo";
@@ -10,8 +10,11 @@ import { PageHeader } from "@/components/page-header";
 import { ProductImage } from "@/components/product-image";
 import type { Product } from "@/types/product";
 
+const PRODUCTS_PER_PAGE = 9;
+
 const categories = [
-  "All",
+  "Categories",
+  "All Categories",
   "Landscapes",
   "Cityscapes",
   "Buildings",
@@ -22,12 +25,12 @@ type Category = (typeof categories)[number];
 
 function toCategory(value: string | undefined): Category {
   if (!value) {
-    return "All";
+    return "Categories";
   }
 
   return (categories as readonly string[]).includes(value)
     ? (value as Category)
-    : "All";
+    : "Categories";
 }
 
 export function Storefront({
@@ -42,14 +45,37 @@ export function Storefront({
   const [activeCategory, setActiveCategory] = useState<Category>(
     toCategory(initialCategory),
   );
+  const [currentPage, setCurrentPage] = useState(1);
   const [catalogProducts, setCatalogProducts] = useState<Product[]>(products);
   const [isRecoveringCatalog, setIsRecoveringCatalog] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const productGridRef = useRef<HTMLElement | null>(null);
   const { cart, itemCount, subtotalCents, removeFromCart, clearCart } =
     useCart();
 
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    requestAnimationFrame(() => {
+      const gridTop = productGridRef.current?.getBoundingClientRect().top;
+      const headerHeight =
+        document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+
+      if (gridTop === undefined) {
+        return;
+      }
+
+      window.scrollTo({
+        top: window.scrollY + gridTop - headerHeight - 16,
+        behavior: "smooth",
+      });
+    });
+  };
+
   const visibleProducts = useMemo(() => {
-    if (activeCategory === "All") {
+    if (
+      activeCategory === "Categories" ||
+      activeCategory === "All Categories"
+    ) {
       return catalogProducts;
     }
 
@@ -58,9 +84,52 @@ export function Storefront({
     );
   }, [activeCategory, catalogProducts]);
 
+  const categoryCards = useMemo(() => {
+    return categories
+      .filter((category) => category !== "Categories")
+      .map((category) => {
+        const firstProduct =
+          category === "All Categories"
+            ? catalogProducts[0]
+            : catalogProducts.find((product) => product.category === category);
+
+        return {
+          category,
+          image: firstProduct?.image ?? "/images/IMG_5634.JPG",
+          count:
+            category === "All Categories"
+              ? catalogProducts.length
+              : catalogProducts.filter(
+                  (product) => product.category === category,
+                ).length,
+        };
+      });
+  }, [catalogProducts]);
+
+  const paginatedProducts = useMemo(() => {
+    if (activeCategory === "Categories") {
+      return [];
+    }
+
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    return visibleProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+  }, [activeCategory, currentPage, visibleProducts]);
+
+  const totalPages = useMemo(() => {
+    if (activeCategory === "Categories") {
+      return 0;
+    }
+
+    return Math.max(1, Math.ceil(visibleProducts.length / PRODUCTS_PER_PAGE));
+  }, [activeCategory, visibleProducts.length]);
+
   useEffect(() => {
     setCatalogProducts(products);
   }, [products]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory]);
 
   useEffect(() => {
     if (catalogProducts.length > 0) {
@@ -187,27 +256,37 @@ export function Storefront({
     <div className="relative min-h-screen overflow-hidden bg-orange-50/90">
       <div className="pointer-events-none absolute -top-28 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,167,122,0.42)_0%,rgba(255,167,122,0)_70%)]" />
 
-      <PageHeader onCartClick={() => setIsCartOpen((value) => !value)} />
+      <PageHeader
+        onCartClick={() => setIsCartOpen((value) => !value)}
+        isExpanded={true}
+        backgroundImage="/images/IMG_5634.JPG"
+        shrinkOnScroll={true}
+      />
 
-      <section className="mx-auto mb-8 flex w-full max-w-6xl flex-wrap gap-3 px-6 pt-24 md:px-10 md:pt-28">
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-              activeCategory === category
-                ? "bg-zinc-900 text-orange-50"
-                : "bg-white/70 text-zinc-700 hover:bg-white"
-            }`}
-            type="button"
-          >
-            {category}
-          </button>
-        ))}
+      <section className="mx-auto mb-8 flex w-full max-w-6xl flex-wrap gap-3 px-6 pt-96 md:px-10">
+        {categories
+          .filter((category) => category !== "All Categories")
+          .map((category) => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                activeCategory === category
+                  ? "bg-zinc-900 text-orange-50"
+                  : "bg-white/70 text-zinc-700 hover:bg-white"
+              }`}
+              type="button"
+            >
+              {category}
+            </button>
+          ))}
       </section>
 
-      <main className="mx-auto grid w-full max-w-6xl gap-6 px-6 md:grid-cols-2 md:px-10 lg:grid-cols-3">
-        {visibleProducts.length === 0 ? (
+      <main
+        ref={productGridRef}
+        className="mx-auto grid w-full max-w-6xl gap-6 px-6 md:grid-cols-2 md:px-10 lg:grid-cols-3"
+      >
+        {catalogProducts.length === 0 ? (
           <section className="col-span-full rounded-3xl border border-orange-300 bg-white/90 p-8 shadow-sm">
             <h2 className="mb-3 text-2xl font-bold text-zinc-900">
               Catalog unavailable
@@ -228,54 +307,122 @@ export function Storefront({
             ) : null}
           </section>
         ) : null}
-        {visibleProducts.map((product, index) => {
-          const showArtist =
-            product.artist.trim().toUpperCase() !== "UNFRAMED ARCHIVE";
+        {activeCategory === "Categories"
+          ? categoryCards.map((card, index) => (
+              <Link
+                key={card.category}
+                href={`/?category=${encodeURIComponent(card.category)}`}
+                onClick={() => setActiveCategory(card.category)}
+                className="group block"
+              >
+                <article className="rounded-3xl border border-zinc-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-lg">
+                  <div
+                    className="relative mb-4 aspect-5/4 overflow-hidden rounded-2xl bg-zinc-100"
+                    data-secure-image
+                  >
+                    <ProductImage
+                      src={card.image}
+                      alt={`${card.category} collection`}
+                      priority={index === 0}
+                      className="transition duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-900/70">
+                    {card.count} print{card.count === 1 ? "" : "s"}
+                  </p>
+                  <h2 className="text-2xl font-bold text-zinc-900">
+                    {card.category}
+                  </h2>
+                </article>
+              </Link>
+            ))
+          : paginatedProducts.map((product, index) => {
+              const showArtist =
+                product.artist.trim().toUpperCase() !== "UNFRAMED ARCHIVE";
 
-          return (
-            <article
-              key={product.id}
-              id={`gallery-item-${product.id}`}
-              className="group rounded-3xl border border-zinc-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-lg"
-            >
-              <Link
-                href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
-                className="block"
-              >
-                <div
-                  className="relative mb-4 aspect-5/4 overflow-hidden rounded-2xl bg-zinc-100"
-                  data-secure-image
+              return (
+                <article
+                  key={product.id}
+                  id={`gallery-item-${product.id}`}
+                  className="group rounded-3xl border border-zinc-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <ProductImage
-                    src={product.image}
-                    alt={getProductAltText(product)}
-                    priority={index === 0}
-                    className="transition duration-500 group-hover:scale-105"
-                  />
-                </div>
-              </Link>
-              {showArtist ? (
-                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-900/70">
-                  {product.artist}
-                </p>
-              ) : null}
-              <h2 className="mb-2 text-2xl font-bold text-zinc-900">
-                {product.title}
-              </h2>
-              <p className="mb-2 text-sm text-zinc-600">{product.size}</p>
-              <p className="mb-4 text-sm text-zinc-600">
-                {product.description}
-              </p>
-              <Link
-                href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
-                className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-orange-50 transition hover:bg-zinc-700"
-              >
-                View details and order
-              </Link>
-            </article>
-          );
-        })}
+                  <Link
+                    href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
+                    className="block"
+                  >
+                    <div
+                      className="relative mb-4 aspect-5/4 overflow-hidden rounded-2xl bg-zinc-100"
+                      data-secure-image
+                    >
+                      <ProductImage
+                        src={product.image}
+                        alt={getProductAltText(product)}
+                        priority={index === 0}
+                        className="transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  </Link>
+                  {showArtist ? (
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-orange-900/70">
+                      {product.artist}
+                    </p>
+                  ) : null}
+                  <h2 className="mb-2 text-2xl font-bold text-zinc-900">
+                    {product.title}
+                  </h2>
+                  <p className="mb-2 text-sm text-zinc-600">{product.size}</p>
+                  <p className="mb-4 text-sm text-zinc-600">
+                    {product.description}
+                  </p>
+                  <Link
+                    href={`/product/${product.id}?category=${encodeURIComponent(activeCategory)}&returnTo=${encodeURIComponent(product.id)}`}
+                    className="inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-orange-50 transition hover:bg-zinc-700"
+                  >
+                    View details and order
+                  </Link>
+                </article>
+              );
+            })}
       </main>
+
+      {activeCategory !== "Categories" && totalPages > 1 ? (
+        <section className="mx-auto mt-8 flex w-full max-w-6xl items-center justify-center gap-2 px-6 md:px-10">
+          <button
+            type="button"
+            onClick={() => goToPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="rounded-full border border-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-800 transition enabled:hover:bg-zinc-900 enabled:hover:text-orange-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(
+            (page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => goToPage(page)}
+                className={`h-10 w-10 rounded-full text-sm font-semibold transition ${
+                  currentPage === page
+                    ? "bg-zinc-900 text-orange-50"
+                    : "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {page}
+              </button>
+            ),
+          )}
+
+          <button
+            type="button"
+            onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="rounded-full border border-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-800 transition enabled:hover:bg-zinc-900 enabled:hover:text-orange-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </section>
+      ) : null}
 
       <footer className="mt-14 border-t border-orange-300/85 bg-orange-200/92 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-2 px-6 py-2 md:flex-row md:items-center md:px-10">

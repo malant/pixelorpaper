@@ -84,8 +84,8 @@ export default async function ProductPage({
     ? imageUrl
     : `${siteUrl}${imageUrl}`;
   const backHref = returnTo
-    ? `/?category=${encodeURIComponent(category ?? "All")}#gallery-item-${encodeURIComponent(returnTo)}`
-    : `/?category=${encodeURIComponent(category ?? "All")}`;
+    ? `/?category=${encodeURIComponent(category ?? "The Collection")}#gallery-item-${encodeURIComponent(returnTo)}`
+    : `/?category=${encodeURIComponent(category ?? "The Collection")}`;
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
