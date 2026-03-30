@@ -256,14 +256,30 @@ export function Storefront({
     <div className="relative min-h-screen overflow-hidden bg-orange-50/90">
       <div className="pointer-events-none absolute -top-28 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,167,122,0.42)_0%,rgba(255,167,122,0)_70%)]" />
 
-      <PageHeader
-        onCartClick={() => setIsCartOpen((value) => !value)}
-        isExpanded={true}
-        backgroundImage="/images/IMG_5634.JPG"
-        shrinkOnScroll={true}
-      />
+      <PageHeader onCartClick={() => setIsCartOpen((value) => !value)} />
 
-      <section className="mx-auto mb-8 flex w-full max-w-6xl flex-wrap gap-3 px-6 pt-96 md:px-10">
+      <section className="relative mt-14 h-[36vh] min-h-56 w-full overflow-hidden border-b border-orange-300/85 sm:h-[42vh] sm:min-h-64 md:h-[48vh] md:min-h-72 lg:h-[52vh] lg:min-h-80">
+        <Image
+          src="/images/IMG_5634.JPG"
+          alt="Scenic gallery hero background"
+          fill
+          priority
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative mx-auto flex h-full w-full max-w-7xl items-center px-6 md:px-10">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-wide text-blue-500 drop-shadow-sm sm:text-5xl">
+              Pixel or Paper
+            </h1>
+            <p className="mt-2 text-sm font-semibold tracking-[0.08em] text-blue-200 drop-shadow-sm sm:text-base">
+              Collect gallery-quality images and fine art prints.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto mb-8 flex w-full max-w-6xl flex-wrap gap-3 px-6 pt-10 md:px-10">
         {categories
           .filter((category) => category !== "All Categories")
           .map((category) => (
