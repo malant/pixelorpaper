@@ -269,10 +269,7 @@ export function Storefront({
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative mx-auto flex h-full w-full max-w-7xl items-center px-6 md:px-10">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-wide text-blue-500 drop-shadow-sm sm:text-5xl">
-              Pixel or Paper
-            </h1>
-            <p className="mt-2 text-sm font-semibold tracking-[0.08em] text-blue-200 drop-shadow-sm sm:text-base">
+            <p className="text-sm font-semibold tracking-[0.08em] text-blue-200 drop-shadow-sm sm:text-base">
               Collect gallery-quality images and fine art prints.
             </p>
           </div>
