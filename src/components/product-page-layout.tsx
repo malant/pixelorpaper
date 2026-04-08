@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { formatPrice } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
+import { SiteFooter } from "@/components/site-footer";
 
 type ProductPageLayoutProps = {
   children: React.ReactNode;
@@ -11,8 +12,7 @@ type ProductPageLayoutProps = {
 
 export function ProductPageLayout({ children }: ProductPageLayoutProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { cart, itemCount, subtotalCents, removeFromCart, clearCart } =
-    useCart();
+  const { cart, subtotalCents, removeFromCart, clearCart } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const checkout = async () => {
@@ -62,7 +62,7 @@ export function ProductPageLayout({ children }: ProductPageLayoutProps) {
     <>
       <PageHeader onCartClick={() => setIsCartOpen((value) => !value)} />
 
-      <div className="relative min-h-screen overflow-hidden pb-16">
+      <div className="relative min-h-screen overflow-hidden">
         <div className="pt-32">{children}</div>
 
         {isCartOpen ? (
@@ -157,6 +157,8 @@ export function ProductPageLayout({ children }: ProductPageLayoutProps) {
             </div>
           </div>
         </aside>
+
+        <SiteFooter />
       </div>
     </>
   );

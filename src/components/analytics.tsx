@@ -1,7 +1,11 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  COOKIE_CONSENT_CHANGED_EVENT,
+  COOKIE_CONSENT_STORAGE_KEY,
+} from "@/lib/cookie-consent";
 
 interface GoogleAnalyticsProps {
   gaId: string;
@@ -15,17 +19,46 @@ declare global {
 }
 
 export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
+  const [hasConsent, setHasConsent] = useState(false);
+
+  useEffect(() => {
+    const readConsent = () => {
+      const stored = window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
+      setHasConsent(stored === "accepted");
+    };
+
+    readConsent();
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === COOKIE_CONSENT_STORAGE_KEY) {
+        readConsent();
+      }
+    };
+
+    const onConsentChange = () => {
+      readConsent();
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChange);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChange);
+    };
+  }, []);
+
   useEffect(() => {
     // Track page views
-    if (typeof window !== "undefined" && window.gtag) {
+    if (typeof window !== "undefined" && hasConsent && window.gtag) {
       window.gtag("event", "page_view", {
         page_path: window.location.pathname,
         page_title: document.title,
       });
     }
-  }, []);
+  }, [hasConsent]);
 
-  if (!gaId) {
+  if (!gaId || !hasConsent) {
     return null;
   }
 

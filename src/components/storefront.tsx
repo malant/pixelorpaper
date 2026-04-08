@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/format";
 import { getProductAltText } from "@/lib/seo";
 import { PageHeader } from "@/components/page-header";
 import { ProductImage } from "@/components/product-image";
+import { SiteFooter } from "@/components/site-footer";
 import type { Product } from "@/types/product";
 
 const PRODUCTS_PER_PAGE = 9;
@@ -40,7 +41,6 @@ export function Storefront({
   products: Product[];
   initialCategory?: string;
 }) {
-  const currentYear = new Date().getFullYear();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<Category>(
     toCategory(initialCategory),
@@ -50,8 +50,7 @@ export function Storefront({
   const [isRecoveringCatalog, setIsRecoveringCatalog] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const productGridRef = useRef<HTMLElement | null>(null);
-  const { cart, itemCount, subtotalCents, removeFromCart, clearCart } =
-    useCart();
+  const { cart, subtotalCents, removeFromCart, clearCart } = useCart();
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
@@ -272,6 +271,10 @@ export function Storefront({
             <p className="text-sm font-semibold tracking-[0.08em] text-blue-200 drop-shadow-sm sm:text-base">
               Collect gallery-quality images and fine art prints.
             </p>
+            <p className="mt-2 max-w-xl text-xs uppercase tracking-[0.1em] text-orange-100 sm:text-sm">
+              All images are original works by Malcolm Rose, curated for Pixel
+              or Paper.
+            </p>
           </div>
         </div>
       </section>
@@ -437,21 +440,7 @@ export function Storefront({
         </section>
       ) : null}
 
-      <footer className="mt-14 border-t border-orange-300/85 bg-orange-200/92 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-2 px-6 py-2 md:flex-row md:items-center md:px-10">
-          <div className="relative h-10 w-52 overflow-hidden rounded-md md:h-12 md:w-64">
-            <Image
-              src="/images/pixelorpaperLogo.png"
-              alt="Pixel or Paper logo"
-              fill
-              className="object-cover object-center"
-            />
-          </div>
-          <p className="text-xs uppercase tracking-[0.14em] text-zinc-700">
-            Copyright {currentYear}. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {isCartOpen ? (
         <button

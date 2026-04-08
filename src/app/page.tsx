@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Fine Art Photography Prints",
   description:
-    "Browse a curated catalog of fine art photography prints from landscapes, cityscapes, buildings, nature, and miscellaneous collections.",
+    "Browse a curated catalog of fine art photography prints by Malcolm Rose across landscapes, cityscapes, buildings, nature, and miscellaneous collections.",
   alternates: {
     canonical: "/",
   },
@@ -27,7 +27,7 @@ export default async function HomePage({
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "UNFRAMED",
+    name: "Pixel or Paper",
     url: siteUrl,
     potentialAction: {
       "@type": "SearchAction",
@@ -39,15 +39,21 @@ export default async function HomePage({
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "UNFRAMED",
+    name: "Pixel or Paper",
+    legalName: "Pixel or Paper by Malcolm Rose",
     url: siteUrl,
-    logo: `${siteUrl}/images/unframed-logo-editorial.svg`,
+    logo: `${siteUrl}/images/pixelorpaperLogo.png`,
     description:
-      "Fine art photography prints and curated imagery for collectors.",
+      "Fine art photography prints and curated imagery by a single artist, Malcolm Rose.",
+    founder: {
+      "@type": "Person",
+      name: "Malcolm Rose",
+    },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "Customer Support",
-      url: siteUrl,
+      email: "support@pixelorpaper.co.uk",
+      url: `${siteUrl}/contact`,
     },
   };
 

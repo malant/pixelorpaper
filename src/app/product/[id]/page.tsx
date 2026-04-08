@@ -42,7 +42,7 @@ export async function generateMetadata({
       canonical: pagePath,
     },
     openGraph: {
-      title: `${product.title} | UNFRAMED`,
+      title: `${product.title} | Pixel or Paper`,
       description: `${product.description} Available as a fine art print.`,
       type: "website",
       url: pagePath,
@@ -55,7 +55,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.title} | UNFRAMED`,
+      title: `${product.title} | Pixel or Paper`,
       description: `${product.description} Available as a fine art print.`,
       images: [imageUrl],
     },
@@ -95,7 +95,7 @@ export default async function ProductPage({
     sku: product.id,
     brand: {
       "@type": "Brand",
-      name: "UNFRAMED",
+      name: "Pixel or Paper",
     },
     category: product.category,
     offers: {

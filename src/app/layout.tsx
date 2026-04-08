@@ -4,6 +4,7 @@ import "./globals.css";
 import { ImageSecurityWrapper } from "@/components/image-security-wrapper";
 import { CartProvider } from "@/context/cart-context";
 import { GoogleAnalytics } from "@/components/analytics";
+import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { WebVitalsReporter } from "@/components/web-vitals";
 
 const heading = Syne({
@@ -24,11 +25,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "UNFRAMED | Fine Art Photography Prints",
-    template: "%s | UNFRAMED",
+    default: "Pixel or Paper | Fine Art Photography Prints",
+    template: "%s | Pixel or Paper",
   },
   description:
-    "Shop curated fine art photography prints across landscapes, cityscapes, buildings, nature, and more.",
+    "Shop curated fine art photography prints by Malcolm Rose across landscapes, cityscapes, buildings, nature, and more.",
   keywords: [
     "fine art prints",
     "photography prints",
@@ -36,23 +37,22 @@ export const metadata: Metadata = {
     "landscape photography",
     "cityscape photography",
     "nature prints",
-    "UNFRAMED",
+    "Pixel or Paper",
+    "Malcolm Rose",
   ],
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "UNFRAMED | Fine Art Photography Prints",
+    title: "Pixel or Paper | Fine Art Photography Prints",
     description:
-      "Discover curated fine art photography prints and collect timeless imagery for your space.",
+      "Discover curated fine art photography prints by Malcolm Rose and collect timeless imagery for your space.",
     url: "/",
-    siteName: "UNFRAMED",
+    siteName: "Pixel or Paper",
     images: [
       {
-        url: "/images/unframed-logo-editorial.svg",
-        width: 720,
-        height: 200,
-        alt: "UNFRAMED editorial logo",
+        url: "/images/pixelorpaperLogo.png",
+        alt: "Pixel or Paper logo",
       },
     ],
     type: "website",
@@ -60,10 +60,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "UNFRAMED | Fine Art Photography Prints",
+    title: "Pixel or Paper | Fine Art Photography Prints",
     description:
-      "Shop curated fine art photography prints across landscapes, cityscapes, buildings, and nature.",
-    images: ["/images/unframed-logo-editorial.svg"],
+      "Shop curated fine art photography prints by Malcolm Rose across landscapes, cityscapes, buildings, and nature.",
+    images: ["/images/pixelorpaperLogo.png"],
   },
   robots: {
     index: true,
@@ -97,6 +97,7 @@ export default function RootLayout({
       <body className={`${heading.variable} ${body.variable}`}>
         <CartProvider>
           <ImageSecurityWrapper>{children}</ImageSecurityWrapper>
+          <CookieConsentBanner />
           <GoogleAnalytics gaId={gaId} />
           <WebVitalsReporter />
         </CartProvider>
