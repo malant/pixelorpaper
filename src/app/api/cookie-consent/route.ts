@@ -28,9 +28,10 @@ function getReturnUrl(request: Request): URL {
 
 export async function POST(request: Request) {
   const formData = await request.formData();
-  const choice = formData.get("choice");
+  const rawChoice = formData.get("choice");
+  const choice = typeof rawChoice === "string" ? rawChoice : null;
 
-  if (!isValidChoice(typeof choice === "string" ? choice : null)) {
+  if (!isValidChoice(choice)) {
     return NextResponse.redirect(getReturnUrl(request), 303);
   }
 
