@@ -8,34 +8,39 @@ export function ImageSecurityWrapper({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    // Globally disable all context menus
-    const preventContextMenu = (event: Event) => {
-      event.preventDefault();
-      (event as MouseEvent).stopPropagation();
-      (event as MouseEvent).stopImmediatePropagation();
-      return false;
+    const isProtectedImageTarget = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) {
+        return false;
+      }
+
+      return (
+        target.tagName === "IMG" ||
+        Boolean(target.closest("[data-secure-image]")) ||
+        Boolean(target.closest("article img"))
+      );
     };
 
-    // Block right mouse button globally
     const preventRightClick = (event: Event) => {
       const mouseEvent = event as MouseEvent;
-      if (mouseEvent.button === 2) {
+      if (mouseEvent.button === 2 && isProtectedImageTarget(event)) {
         mouseEvent.preventDefault();
-        mouseEvent.stopPropagation();
-        mouseEvent.stopImmediatePropagation();
-        return false;
       }
     };
 
-    // Block image dragging
     const preventDrag = (event: Event) => {
-      const dragEvent = event as DragEvent;
-      dragEvent.preventDefault();
-      dragEvent.stopPropagation();
-      dragEvent.stopImmediatePropagation();
+      if (isProtectedImageTarget(event)) {
+        const dragEvent = event as DragEvent;
+        dragEvent.preventDefault();
+      }
     };
 
-    // Use capture phase (true) to intercept before handlers bubble up
+    const preventContextMenu = (event: Event) => {
+      if (isProtectedImageTarget(event)) {
+        event.preventDefault();
+      }
+    };
+
     document.addEventListener("contextmenu", preventContextMenu, true);
     document.addEventListener("mousedown", preventRightClick, true);
     document.addEventListener("dragstart", preventDrag, true);

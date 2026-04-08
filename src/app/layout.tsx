@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Syne, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { ImageSecurityWrapper } from "@/components/image-security-wrapper";
 import { CartProvider } from "@/context/cart-context";
+import { CookiePreferencesProvider } from "@/context/cookie-preferences-context";
 import { GoogleAnalytics } from "@/components/analytics";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { WebVitalsReporter } from "@/components/web-vitals";
@@ -96,10 +96,12 @@ export default function RootLayout({
       </head>
       <body className={`${heading.variable} ${body.variable}`}>
         <CartProvider>
-          <ImageSecurityWrapper>{children}</ImageSecurityWrapper>
-          <CookieConsentBanner />
-          <GoogleAnalytics gaId={gaId} />
-          <WebVitalsReporter />
+          <CookiePreferencesProvider>
+            {children}
+            <CookieConsentBanner />
+            <GoogleAnalytics gaId={gaId} />
+            <WebVitalsReporter />
+          </CookiePreferencesProvider>
         </CartProvider>
       </body>
     </html>

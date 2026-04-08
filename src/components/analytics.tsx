@@ -3,8 +3,8 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import {
-  COOKIE_CONSENT_CHANGED_EVENT,
   COOKIE_CONSENT_STORAGE_KEY,
+  getStoredCookieConsent,
 } from "@/lib/cookie-consent";
 
 interface GoogleAnalyticsProps {
@@ -23,8 +23,7 @@ export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
 
   useEffect(() => {
     const readConsent = () => {
-      const stored = window.localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
-      setHasConsent(stored === "accepted");
+      setHasConsent(getStoredCookieConsent() === "accepted");
     };
 
     readConsent();
@@ -35,16 +34,10 @@ export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
       }
     };
 
-    const onConsentChange = () => {
-      readConsent();
-    };
-
     window.addEventListener("storage", onStorage);
-    window.addEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChange);
 
     return () => {
       window.removeEventListener("storage", onStorage);
-      window.removeEventListener(COOKIE_CONSENT_CHANGED_EVENT, onConsentChange);
     };
   }, []);
 
