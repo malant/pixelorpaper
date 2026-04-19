@@ -32,10 +32,10 @@ export function getPrintSizeByKey(key: string): PrintSize | undefined {
 
 export function getDownloadPriceCents(): number {
   const raw = Number.parseInt(
-    process.env.NEXT_PUBLIC_DOWNLOAD_PRICE_CENTS ?? "1200",
+    process.env.NEXT_PUBLIC_DOWNLOAD_PRICE_CENTS ?? "600",
     10,
   );
-  return Number.isFinite(raw) && raw > 0 ? raw : 1200;
+  return Number.isFinite(raw) && raw > 0 ? raw : 600;
 }
 
 export function getVariantUnitPriceCents(variant: PurchaseVariant): number {
