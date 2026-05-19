@@ -6,6 +6,7 @@ import { CookiePreferencesProvider } from "@/context/cookie-preferences-context"
 import { GoogleAnalytics } from "@/components/analytics";
 import { CookieConsentBanner } from "@/components/cookie-consent-banner";
 import { WebVitalsReporter } from "@/components/web-vitals";
+import { ImageSecurityWrapper } from "@/components/image-security-wrapper";
 
 const heading = Syne({
   subsets: ["latin"],
@@ -97,10 +98,12 @@ export default function RootLayout({
       <body className={`${heading.variable} ${body.variable}`}>
         <CartProvider>
           <CookiePreferencesProvider>
-            {children}
-            <CookieConsentBanner />
-            <GoogleAnalytics gaId={gaId} />
-            <WebVitalsReporter />
+            <ImageSecurityWrapper>
+              {children}
+              <CookieConsentBanner />
+              <GoogleAnalytics gaId={gaId} />
+              <WebVitalsReporter />
+            </ImageSecurityWrapper>
           </CookiePreferencesProvider>
         </CartProvider>
       </body>

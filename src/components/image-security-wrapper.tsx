@@ -9,16 +9,58 @@ export function ImageSecurityWrapper({
 }) {
   useEffect(() => {
     const isProtectedImageTarget = (event: Event) => {
-      const target = event.target as HTMLElement | null;
-      if (!target) {
-        return false;
+      // Prefer composedPath to detect images rendered by wrappers (next/image, picture, etc.)
+      const path: any[] = (event as any).composedPath
+        ? (event as any).composedPath()
+        : (event as any).path || [];
+
+      for (const node of path) {
+        if (!node) continue;
+        if (node.nodeName === "IMG") {
+          return true;
+        }
+        if (
+          node instanceof Element &&
+          node.hasAttribute &&
+          node.hasAttribute("data-secure-image")
+        ) {
+          return true;
+        }
       }
 
-      return (
-        target.tagName === "IMG" ||
-        Boolean(target.closest("[data-secure-image]")) ||
-        Boolean(target.closest("article img"))
-      );
+      const target = event.target as HTMLElement | null;
+      if (target) {
+        if (
+          target.tagName === "IMG" ||
+          Boolean(target.closest("[data-secure-image]"))
+        ) {
+          return true;
+        }
+      }
+
+      // If the image has pointer-events: none the event target may be an ancestor.
+      // Use elementFromPoint to check the element directly under the pointer.
+      try {
+        const me = event as MouseEvent;
+        if (typeof me.clientX === "number" && typeof me.clientY === "number") {
+          const el = document.elementFromPoint(
+            me.clientX,
+            me.clientY,
+          ) as Element | null;
+          if (el) {
+            if (
+              el.tagName === "IMG" ||
+              Boolean(el.closest("[data-secure-image]"))
+            ) {
+              return true;
+            }
+          }
+        }
+      } catch {
+        // ignore cross-origin or other errors
+      }
+
+      return false;
     };
 
     const preventRightClick = (event: Event) => {

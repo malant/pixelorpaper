@@ -82,7 +82,7 @@ article img {
   -webkit-highlight: none;
 }
 
-[data-secure-image],
+[data-secure-image] img,
 article img {
   pointer-events: none;
 }
